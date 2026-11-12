@@ -20,12 +20,14 @@ import { TooltipProvider } from './components/ui/tooltip'
 import { sections } from './data/uirouuri'
 
 const FURIGANA_KEY = 'show-furigana'
+const STEALTH_KEY = 'stealth-mode'
 
-function loadShowFurigana(): boolean {
+function loadFlag(key: string, fallback: boolean): boolean {
   try {
-    return localStorage.getItem(FURIGANA_KEY) !== 'false'
+    const value = localStorage.getItem(key)
+    return value === null ? fallback : value === 'true'
   } catch {
-    return true
+    return fallback
   }
 }
 
@@ -41,7 +43,8 @@ const ACTIVE_MENU_CLASS =
   'data-active:bg-sidebar-primary data-active:font-bold data-active:text-sidebar-primary-foreground data-active:hover:bg-sidebar-primary data-active:hover:text-sidebar-primary-foreground'
 
 function App() {
-  const [showFurigana, setShowFurigana] = useState(loadShowFurigana)
+  const [showFurigana, setShowFurigana] = useState(() => loadFlag(FURIGANA_KEY, true))
+  const [stealth, setStealth] = useState(() => loadFlag(STEALTH_KEY, false))
   const [activeSectionId, setActiveSectionId] = useState<string>('all')
   const [activeIndex, setActiveIndex] = useState<number | null>(0)
 
@@ -60,6 +63,14 @@ function App() {
       // 保存できなくても動作には影響しない
     }
   }, [showFurigana])
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(STEALTH_KEY, String(stealth))
+    } catch {
+      // 保存できなくても動作には影響しない
+    }
+  }, [stealth])
 
   // 表示中の行の範囲(全体での通し番号)
   const firstIndex = sectionOffsets.get(visibleSections[0].id) ?? 0
@@ -121,6 +132,10 @@ function App() {
               <Switch id="furigana" checked={showFurigana} onCheckedChange={setShowFurigana} />
               <Label htmlFor="furigana">ふりがな</Label>
             </div>
+            <div className="flex items-center gap-2 px-2 py-1">
+              <Switch id="stealth" checked={stealth} onCheckedChange={setStealth} />
+              <Label htmlFor="stealth">ステルス</Label>
+            </div>
           </SidebarHeader>
           <SidebarContent>
             <SidebarGroup>
@@ -172,7 +187,7 @@ function App() {
                             onClick={() => setActiveIndex(index)}
                           >
                             <span className="index">{index + 1}</span>
-                            <span className="text">
+                            <span className={stealth ? 'text is-stealth' : 'text'}>
                               <RubyText text={phrase.text} showFurigana={showFurigana} />
                             </span>
                           </button>

@@ -177,6 +177,14 @@ body {
   flex: 1;
 }
 
+/* ステルスモード: 先頭2文字は見せ、3文字目の途中から徐々に透明にする */
+.text.is-stealth {
+  white-space: nowrap;
+  overflow: hidden;
+  -webkit-mask-image: linear-gradient(to right, #000 2.5em, transparent 4em);
+  mask-image: linear-gradient(to right, #000 2.5em, transparent 4em);
+}
+
 ruby {
   ruby-align: center;
 }
