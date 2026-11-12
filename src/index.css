@@ -11,40 +11,42 @@
   --paper: #f7f1e4;
   --paper-2: #efe6d4;
   --line: #d8ccb4;
-  --accent: oklch(0.97 0 0);
   --accent-soft: #f3e4d2;
   --brand: #8b1e1e;
   --sans: 'Hiragino Mincho ProN', 'Yu Mincho', 'YuMincho', 'Noto Serif JP', serif;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent-foreground: oklch(0.205 0 0);
+  /* shadcn のトークンを、アプリの配色(和紙の地・墨の文字・朱の差し色)に合わせる */
+  --background: var(--paper);
+  --foreground: var(--ink);
+  --card: var(--paper);
+  --card-foreground: var(--ink);
+  --popover: var(--paper);
+  --popover-foreground: var(--ink);
+  --primary: var(--brand);
+  --primary-foreground: #fff;
+  --secondary: var(--paper-2);
+  --secondary-foreground: var(--ink);
+  --muted: var(--paper-2);
+  --muted-foreground: var(--ink-muted);
+  --accent: var(--accent-soft);
+  --accent-foreground: var(--ink);
   --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
+  --border: var(--line);
+  --input: var(--line);
+  --ring: var(--brand);
   --chart-1: oklch(0.87 0 0);
   --chart-2: oklch(0.556 0 0);
   --chart-3: oklch(0.439 0 0);
   --chart-4: oklch(0.371 0 0);
   --chart-5: oklch(0.269 0 0);
   --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  --sidebar: var(--paper-2);
+  --sidebar-foreground: var(--ink);
+  --sidebar-primary: var(--brand);
+  --sidebar-primary-foreground: #fff;
+  --sidebar-accent: var(--accent-soft);
+  --sidebar-accent-foreground: var(--ink);
+  --sidebar-border: var(--line);
+  --sidebar-ring: var(--brand);
 }
 
 * {
@@ -61,19 +63,35 @@ body {
   font-family: var(--sans);
   color: var(--ink);
   background: var(--paper);
-  line-height: 1.7;
+  line-height: 1.5;
 }
 
 #root {
-  max-width: 760px;
-  margin: 0 auto;
-  padding: 32px 20px 64px;
+  min-height: 100svh;
 }
 
 .app {
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 8px;
+  width: 100%;
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 12px 16px 32px;
+}
+
+/*
+ * サイドバーを開いているとき、文章をブラウザ全体の中央に合わせる。
+ * 右側の領域の右に、サイドバーと同じ幅の余白を足して左右対称にする。
+ * 画面が狭くて文章が入りきらないときは、その分だけ余白を減らす。
+ */
+@media (min-width: 768px) {
+  [data-slot='sidebar-wrapper']:has(.peer[data-state='expanded']) [data-slot='sidebar-inset'] {
+    padding-right: min(
+      var(--sidebar-width),
+      max(0px, calc(100vw - var(--sidebar-width) - 792px))
+    );
+  }
 }
 
 .header h1 {
@@ -94,53 +112,9 @@ body {
   letter-spacing: 0.18em;
 }
 
-.toolbar {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px 16px;
-  align-items: center;
-  justify-content: space-between;
-  padding: 12px 0;
-  border-block: 1px solid var(--line);
-  position: sticky;
-  top: 0;
-  background: var(--paper);
-  z-index: 1;
-}
-
-.toggle {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 15px;
-}
-
-.sections {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-
-.sections button {
-  font-family: inherit;
-  font-size: 13px;
-  border: 1px solid var(--line);
-  background: transparent;
-  color: var(--ink);
-  padding: 6px 10px;
-  border-radius: 999px;
-  cursor: pointer;
-}
-
-.sections button.is-active {
-  background: var(--brand);
-  border-color: var(--brand);
-  color: #fff;
-}
-
 .act h2 {
-  margin: 8px 0 12px;
-  font-size: 18px;
+  margin: 4px 0 6px;
+  font-size: 15px;
   font-weight: 600;
   letter-spacing: 0.16em;
 }
@@ -151,19 +125,19 @@ body {
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 2px;
 }
 
 .phrase {
   width: 100%;
   display: flex;
-  gap: 12px;
+  gap: 8px;
   align-items: flex-start;
   text-align: left;
   font-family: inherit;
-  font-size: 18px;
-  line-height: 2;
-  padding: 10px 12px;
+  font-size: 16px;
+  line-height: 1.8;
+  padding: 2px 8px;
   border: 1px solid transparent;
   border-radius: 8px;
   background: transparent;
@@ -182,10 +156,10 @@ body {
 
 .index {
   flex: none;
-  width: 2.2em;
+  width: 1.8em;
   color: var(--ink-muted);
-  font-size: 12px;
-  padding-top: 8px;
+  font-size: 11px;
+  padding-top: 6px;
   font-variant-numeric: tabular-nums;
 }
 
@@ -204,7 +178,7 @@ rt {
 
 @media (max-width: 640px) {
   .phrase {
-    font-size: 16px;
+    font-size: 15px;
   }
 }
 

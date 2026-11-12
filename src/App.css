@@ -182,29 +182,3 @@
     border-right-color: var(--border);
   }
 }
-
-.speech-panel {
-  position: sticky;
-  bottom: 0;
-  z-index: 10;
-  margin-top: 16px;
-  padding: 12px 16px;
-  background: var(--paper-2);
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  font-size: 15px;
-}
-
-.speech-panel p {
-  margin: 4px 0;
-}
-
-.speech-panel .score {
-  font-weight: bold;
-  color: var(--brand);
-}
-
-.speech-panel .mic.is-listening {
-  background: var(--brand);
-  color: #fff;
-}
