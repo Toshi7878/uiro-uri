@@ -59,6 +59,11 @@ body {
   min-height: 100%;
 }
 
+/* 縦スクロールバーを常に表示し、段によって本文の左右位置がずれないようにする */
+html {
+  overflow-y: scroll;
+}
+
 body {
   font-family: var(--sans);
   color: var(--ink);
@@ -81,15 +86,20 @@ body {
 }
 
 /*
- * サイドバーを開いているとき、文章をブラウザ全体の中央に合わせる。
- * 右側の領域の右に、サイドバーと同じ幅の余白を足して左右対称にする。
+ * サイドバーを開いているとき、文章の位置を調整する。
+ * --content-shift が 1 ならブラウザ全体の中央、0 なら右側の領域(サイドバーを除いた部分)の中央。
+ * 1 より大きいと、全体の中央より左に寄る(2 でサイドバー幅の半分だけ左)。
+ * 右側の領域の右に、サイドバー幅 × --content-shift の余白を足して寄せ方を決める。
  * 画面が狭くて文章が入りきらないときは、その分だけ余白を減らす。
  */
 @media (min-width: 768px) {
   [data-slot='sidebar-wrapper']:has(.peer[data-state='expanded']) [data-slot='sidebar-inset'] {
-    padding-right: min(
-      var(--sidebar-width),
-      max(0px, calc(100vw - var(--sidebar-width) - 792px))
+    --content-shift: 1.8;
+    padding-right: calc(
+      min(
+        calc(var(--sidebar-width) * var(--content-shift)),
+        max(0px, calc(100vw - var(--sidebar-width) - 792px))
+      ) + 14px
     );
   }
 }
