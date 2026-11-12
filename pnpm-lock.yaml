@@ -14,6 +14,9 @@ importers:
       '@fontsource-variable/geist':
         specifier: ^5.3.0
         version: 5.3.0
+      '@patdx/kuromoji':
+        specifier: ^1.0.4
+        version: 1.0.4
       '@tailwindcss/vite':
         specifier: ^4.3.5
         version: 4.3.5(vite@8.3.8(@types/node@26.6.6)(jiti@2.7.0))
@@ -426,6 +429,9 @@ packages:
     engines: {node: ^20.19.0 || >=22.12.0}
     cpu: [x64]
     os: [win32]
+
+  '@patdx/kuromoji@1.0.4':
+    resolution: {integrity: sha512-RyDyFh33XLxbsANNnai2h9LyR8AS1NCkqbO8Ts836g8cCb9XPBHQgzFjkja6PSGH8SKMaPUISIft7l9NUkm2PQ==}
 
   '@rolldown/binding-android-arm-eabi@1.2.19':
     resolution: {integrity: sha512-e+Ebe0WT+9tbXmNKPIiC8YrWAHYwug3m6i4p3rZGGulfZri1jtI4HslT+OZnFf/OIHowWF71DTlHwXBP2SiA7A==}
@@ -2102,6 +2108,8 @@ snapshots:
 
   '@oxlint/binding-win32-x64-msvc@1.93.0':
     optional: true
+
+  '@patdx/kuromoji@1.0.4': {}
 
   '@rolldown/binding-android-arm-eabi@1.2.19':
     optional: true
