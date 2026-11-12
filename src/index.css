@@ -7,12 +7,13 @@
 
 :root {
   --ink: #1c1915;
-  --muted: oklch(0.97 0 0);
+  --ink-muted: #5c564c;
   --paper: #f7f1e4;
   --paper-2: #efe6d4;
   --line: #d8ccb4;
   --accent: oklch(0.97 0 0);
   --accent-soft: #f3e4d2;
+  --brand: #8b1e1e;
   --sans: 'Hiragino Mincho ProN', 'Yu Mincho', 'YuMincho', 'Noto Serif JP', serif;
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
@@ -85,7 +86,7 @@ body {
 .kicker,
 .lead {
   margin: 0;
-  color: var(--muted);
+  color: var(--ink-muted);
 }
 
 .kicker {
@@ -132,8 +133,8 @@ body {
 }
 
 .sections button.is-active {
-  background: var(--accent);
-  border-color: var(--accent);
+  background: var(--brand);
+  border-color: var(--brand);
   color: #fff;
 }
 
@@ -176,13 +177,13 @@ body {
 
 .phrase.is-active {
   background: var(--accent-soft);
-  border-color: color-mix(in srgb, var(--accent) 35%, var(--line));
+  border-color: color-mix(in srgb, var(--brand) 35%, var(--line));
 }
 
 .index {
   flex: none;
   width: 2.2em;
-  color: var(--muted);
+  color: var(--ink-muted);
   font-size: 12px;
   padding-top: 8px;
   font-variant-numeric: tabular-nums;
@@ -198,7 +199,7 @@ ruby {
 
 rt {
   font-size: 0.55em;
-  color: var(--muted);
+  color: var(--ink-muted);
 }
 
 @media (max-width: 640px) {
