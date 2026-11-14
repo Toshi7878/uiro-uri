@@ -167,6 +167,12 @@ body {
   cursor: pointer;
 }
 
+/* 選んだ行は .is-active の枠で示すので、ブラウザ標準のフォーカス枠は出さない */
+.phrase:focus,
+.phrase:focus-visible {
+  outline: none;
+}
+
 .phrase:hover {
   background: var(--paper-2);
 }
