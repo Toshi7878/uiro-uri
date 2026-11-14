@@ -95,7 +95,7 @@ export function PreviewPlayer({ floating = false }: { floating?: boolean }) {
       <RadioButtonGroup
         value={rate}
         onValueChange={previewPlayer.setRate}
-        options={PLAYBACK_RATES.map((option) => ({ value: option, label: option === 1 ? '通常' : `${option}x` }))}
+        options={PLAYBACK_RATES.map((option) => ({ value: option, label: option === 1 ? '通常' : `${option}倍` }))}
         aria-label="再生速度"
         className="w-full"
       />
