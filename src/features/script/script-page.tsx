@@ -20,7 +20,7 @@ import {
   SidebarTrigger,
 } from '@/components/ui/sidebar'
 import { TooltipProvider } from '@/components/ui/tooltip'
-import { sections } from './uirouuri'
+import { sections } from './uiro-uri'
 import type { Video } from '@/features/videos/server'
 import type { ScriptSettings } from './settings'
 import { useScriptSettings } from './settings-store'

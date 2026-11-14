@@ -1,5 +1,4 @@
 import { useHotkey } from '@tanstack/react-hotkeys'
-import { X } from 'lucide-react'
 import YouTube, { type YouTubeEvent } from 'react-youtube'
 import { RadioButtonGroup } from '@/components/ui/radio-button-group'
 import { PLAYBACK_RATES, previewPlayer, type PreviewTarget, usePreviewStore } from './preview-store'
@@ -71,7 +70,7 @@ export function PreviewPlayer({ floating = false }: { floating?: boolean }) {
           disabled={!videoId}
           onClick={() => previewPlayer.clear()}
         >
-          <X className="size-4" aria-hidden="true" />
+          閉
         </button>
       </div>
       <div className="relative">

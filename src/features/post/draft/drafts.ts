@@ -9,7 +9,7 @@ export type Draft = {
   updatedAt: number
 }
 
-export const draftDb = new Dexie('uirouuri') as Dexie & {
+export const draftDb = new Dexie('uiro-uri') as Dexie & {
   drafts: EntityTable<Draft, 'videoId'>
 }
 
