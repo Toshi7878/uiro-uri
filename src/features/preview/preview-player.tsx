@@ -1,11 +1,8 @@
 import { useHotkey } from '@tanstack/react-hotkeys'
 import { X } from 'lucide-react'
 import YouTube, { type YouTubeEvent } from 'react-youtube'
-import { Radio } from '@base-ui/react/radio'
-import { buttonVariants } from '@/components/ui/button'
-import { RadioGroup } from '@/components/ui/radio-group'
-import { cn } from '@/lib/utils'
-import { PLAYBACK_RATES, type PlaybackRate, previewPlayer, type PreviewTarget, usePreviewStore } from './preview-store'
+import { RadioButtonGroup } from '@/components/ui/radio-button-group'
+import { PLAYBACK_RATES, previewPlayer, type PreviewTarget, usePreviewStore } from './preview-store'
 
 const BUTTON_CLASS =
   'flex h-8 items-center justify-center rounded bg-black/70 px-2 text-center text-sm text-white hover:bg-black/90 disabled:opacity-30'
@@ -96,26 +93,13 @@ export function PreviewPlayer({ floating = false }: { floating?: boolean }) {
           </div>
         )}
       </div>
-      <RadioGroup
+      <RadioButtonGroup
         value={rate}
-        onValueChange={(value) => previewPlayer.setRate(value as PlaybackRate)}
+        onValueChange={previewPlayer.setRate}
+        options={PLAYBACK_RATES.map((option) => ({ value: option, label: option === 1 ? '通常' : `${option}x` }))}
         aria-label="再生速度"
-        className="grid grid-cols-3 gap-1"
-      >
-        {PLAYBACK_RATES.map((option) => (
-          // ラジオ(role=radio)のまま、見た目だけボタンにする。選ばれているものは塗りつぶす
-          <Radio.Root
-            key={option}
-            value={option}
-            className={cn(
-              buttonVariants({ variant: 'outline', size: 'sm' }),
-              'data-checked:border-primary data-checked:bg-primary data-checked:text-primary-foreground data-checked:hover:bg-primary',
-            )}
-          >
-            {option === 1 ? '通常' : `${option}x`}
-          </Radio.Root>
-        ))}
-      </RadioGroup>
+        className="w-full"
+      />
     </div>
   )
 }

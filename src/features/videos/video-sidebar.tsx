@@ -48,11 +48,11 @@ function VideoList({ videos, previewId, selectedLine, onSelect }: VideoListProps
               src={getYouTubeThumbnailUrl(video.id, 'mqdefault')}
               alt=""
               loading="lazy"
-              className="aspect-video w-16 shrink-0 rounded-sm object-cover"
+              className="aspect-video w-12 shrink-0 rounded-sm object-cover lg:w-14 xl:w-16"
             />
             <span className="flex min-w-0 flex-col items-start gap-1">
               <span className="line-clamp-2 leading-snug">{video.title}</span>
-              <span className="flex items-center gap-1">
+              <span className="flex flex-wrap items-center gap-1">
                 <Badge variant={video.lineCount === phrases.length ? 'default' : 'secondary'}>
                   {video.lineCount === phrases.length ? '全文' : `${video.lineCount}行`}
                 </Badge>
@@ -122,7 +122,7 @@ export function VideoSidebar({ videos, selectedLine }: { videos: Video[]; select
   }
 
   return (
-    <aside className="sticky top-0 hidden h-svh w-72 shrink-0 flex-col border-l bg-sidebar text-sidebar-foreground md:flex">
+    <aside className="sticky top-0 hidden h-svh w-48 shrink-0 lg:w-60 xl:w-72 flex-col border-l bg-sidebar text-sidebar-foreground md:flex">
       <PreviewPlayer />
       <VideoList videos={videos} previewId={previewId} selectedLine={selectedLine} />
     </aside>

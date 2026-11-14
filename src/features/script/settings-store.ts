@@ -1,30 +1,37 @@
-import { create } from 'zustand'
-import { persist } from 'zustand/middleware'
+import { useEffect, useState } from 'react'
+import { createStore, useStore } from 'zustand'
+import { type ScriptSettings, serializeSettings, type TextSize } from './settings'
 
-type ScriptSettings = {
-  showFurigana: boolean
-  stealth: boolean
+type SettingsState = ScriptSettings & {
   setShowFurigana: (value: boolean) => void
   setStealth: (value: boolean) => void
+  setTextSize: (value: TextSize) => void
+}
+
+/** ストアはページごとに作る(サーバー側の描画で、別のリクエストの設定が混ざらないように、グローバルには置かない)。 */
+function createSettingsStore(initial: ScriptSettings) {
+  return createStore<SettingsState>()((set) => ({
+    ...initial,
+    setShowFurigana: (showFurigana) => set({ showFurigana }),
+    setStealth: (stealth) => set({ stealth }),
+    setTextSize: (textSize) => set({ textSize }),
+  }))
 }
 
 /**
- * 練習画面の表示設定(localStorage に保存)。
- * サーバー側の描画と食い違わないよう、保存値の読み込みは自動では行わない。
- * マウント後に `useScriptSettings.persist.rehydrate()` を呼ぶ。
+ * 練習画面の表示設定。初期値はサーバーが Cookie から読んだもので、変更すると Cookie に保存する。
+ * 保存できなくても(Cookie が使えなくても)動作には影響しない。
  */
-export const useScriptSettings = create<ScriptSettings>()(
-  persist(
-    (set) => ({
-      showFurigana: true,
-      stealth: false,
-      setShowFurigana: (showFurigana) => set({ showFurigana }),
-      setStealth: (stealth) => set({ stealth }),
-    }),
-    {
-      name: 'script-settings',
-      skipHydration: true,
-      partialize: ({ showFurigana, stealth }) => ({ showFurigana, stealth }),
-    },
-  ),
-)
+export function useScriptSettings(initial: ScriptSettings) {
+  const [store] = useState(() => createSettingsStore(initial))
+
+  useEffect(
+    () =>
+      store.subscribe(({ showFurigana, stealth, textSize }) => {
+        document.cookie = serializeSettings({ showFurigana, stealth, textSize })
+      }),
+    [store],
+  )
+
+  return useStore(store)
+}

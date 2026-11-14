@@ -22,6 +22,7 @@ import {
 import { TooltipProvider } from '@/components/ui/tooltip'
 import { sections } from './uirouuri'
 import type { Video } from '@/features/videos/server'
+import type { ScriptSettings } from './settings'
 import { useScriptSettings } from './settings-store'
 
 /** 入力欄などでは、ここで扱わず本来の操作(文字入力・スイッチの切り替えなど)に任せる。 */
@@ -46,8 +47,8 @@ sections.reduce((offset, section) => {
 const ACTIVE_MENU_CLASS =
   'data-active:bg-sidebar-primary data-active:font-bold data-active:text-sidebar-primary-foreground data-active:hover:bg-sidebar-primary data-active:hover:text-sidebar-primary-foreground'
 
-export function ScriptPage({ videos }: { videos: Video[] }) {
-  const { showFurigana, stealth, setShowFurigana, setStealth } = useScriptSettings()
+export function ScriptPage({ videos, settings }: { videos: Video[]; settings: ScriptSettings }) {
+  const { showFurigana, stealth, textSize, setShowFurigana, setStealth, setTextSize } = useScriptSettings(settings)
   const [activeSectionId, setActiveSectionId] = useState<string>('all')
   const [activeIndex, setActiveIndex] = useState<number | null>(0)
 
@@ -58,11 +59,6 @@ export function ScriptPage({ videos }: { videos: Video[] }) {
         : sections.filter((section) => section.id === activeSectionId),
     [activeSectionId],
   )
-
-  // SSR と食い違わないよう、保存値はマウント後に読み込む
-  useEffect(() => {
-    void useScriptSettings.persist.rehydrate()
-  }, [])
 
   // 表示中の行の範囲(全体での通し番号)
   const firstIndex = sectionOffsets.get(visibleSections[0].id) ?? 0
@@ -115,6 +111,14 @@ export function ScriptPage({ videos }: { videos: Video[] }) {
               <Switch id="stealth" checked={stealth} onCheckedChange={setStealth} />
               <Label htmlFor="stealth">ステルス</Label>
             </div>
+            <div className="flex items-center gap-2 px-2 py-1">
+              <Switch
+                id="large-text"
+                checked={textSize === 'large'}
+                onCheckedChange={(checked) => setTextSize(checked ? 'large' : 'medium')}
+              />
+              <Label htmlFor="large-text">大きい文字</Label>
+            </div>
           </SidebarHeader>
           <SidebarContent>
             <SidebarGroup>
@@ -147,9 +151,10 @@ export function ScriptPage({ videos }: { videos: Video[] }) {
           </SidebarContent>
         </Sidebar>
 
-        <SidebarInset>
-          <div className="app">
-            <SidebarTrigger className="md:hidden" />
+        <SidebarInset className="min-w-0">
+          <div className="app" data-size={textSize}>
+            {/* スマホ幅では左サイドバーが Sheet になる。どこまでスクロールしていても開けるよう、画面の左上に固定する */}
+            <SidebarTrigger variant="outline" className="fixed top-3 left-3 z-40 bg-background md:hidden" />
             <div className="script">
               {visibleSections.map((section) => (
                 <section key={section.id} className="act">
@@ -163,6 +168,7 @@ export function ScriptPage({ videos }: { videos: Video[] }) {
                             type="button"
                             className={activeIndex === index ? 'phrase is-active' : 'phrase'}
                             data-phrase-index={index}
+                            data-size={textSize}
                             onClick={() => {
                               setActiveIndex(index)
                               // プレビュー中の動画があれば、その行の時刻から再生する(一時停止中なら再開)
