@@ -95,8 +95,9 @@ export function ScriptPage({ videos, settings }: { videos: Video[]; settings: Sc
   useHotkey(
     'Enter',
     (event) => {
-      // ボタンやリンクにフォーカスがあるときは、本来のクリック操作(動画の選択など)を妨げない
-      if (event.target instanceof HTMLElement && event.target.closest('button, a')) return
+      // ボタンやリンクにフォーカスがあるときは、本来のクリック操作(動画の選択など)を妨げない。
+      // ただし行ボタンは例外: クリックで選んだ行にフォーカスが残るので、任せると今の選択行ではなくその行が再生されてしまう
+      if (event.target instanceof HTMLElement && event.target.closest('button:not(.phrase), a')) return
       actOnActive(previewPlayer.seekToLine)(event)
     },
     HOTKEY_OPTIONS,
