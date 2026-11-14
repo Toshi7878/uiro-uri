@@ -1,7 +1,10 @@
+import { useHotkey } from '@tanstack/react-hotkeys'
 import { useEffect, useMemo, useState } from 'react'
-import { RubyText } from './components/RubyText'
-import { Label } from './components/ui/label'
-import { Switch } from './components/ui/switch'
+import { RubyText } from './ruby-text'
+import { previewPlayer } from '@/features/preview/preview-store'
+import { VideoSidebar } from '@/features/videos/video-sidebar'
+import { Label } from '@/components/ui/label'
+import { Switch } from '@/components/ui/switch'
 import {
   Sidebar,
   SidebarContent,
@@ -15,21 +18,22 @@ import {
   SidebarMenuItem,
   SidebarProvider,
   SidebarTrigger,
-} from './components/ui/sidebar'
-import { TooltipProvider } from './components/ui/tooltip'
-import { sections } from './data/uirouuri'
+} from '@/components/ui/sidebar'
+import { TooltipProvider } from '@/components/ui/tooltip'
+import { sections } from './uirouuri'
+import type { Video } from '@/features/videos/server'
+import { useScriptSettings } from './settings-store'
 
-const FURIGANA_KEY = 'show-furigana'
-const STEALTH_KEY = 'stealth-mode'
+/** 入力欄などでは、ここで扱わず本来の操作(文字入力・スイッチの切り替えなど)に任せる。 */
+const isFormControl = (target: EventTarget | null) =>
+  target instanceof HTMLElement &&
+  target.closest('input, select, textarea, [role="switch"], [role="tab"]') !== null
 
-function loadFlag(key: string, fallback: boolean): boolean {
-  try {
-    const value = localStorage.getItem(key)
-    return value === null ? fallback : value === 'true'
-  } catch {
-    return fallback
-  }
-}
+/**
+ * 行ボタンにフォーカスがあっても Space で次の行へ進めたいので、ボタンでの Space を除外する既定の動きはやめ、
+ * 除外の判断と preventDefault は `isFormControl` を使ってコールバック側で行う。
+ */
+const HOTKEY_OPTIONS = { ignoreInputs: false, preventDefault: false, stopPropagation: false } as const
 
 // 各段の先頭行の、全体での通し番号
 const sectionOffsets = new Map<string, number>()
@@ -42,9 +46,8 @@ sections.reduce((offset, section) => {
 const ACTIVE_MENU_CLASS =
   'data-active:bg-sidebar-primary data-active:font-bold data-active:text-sidebar-primary-foreground data-active:hover:bg-sidebar-primary data-active:hover:text-sidebar-primary-foreground'
 
-function App() {
-  const [showFurigana, setShowFurigana] = useState(() => loadFlag(FURIGANA_KEY, true))
-  const [stealth, setStealth] = useState(() => loadFlag(STEALTH_KEY, false))
+export function ScriptPage({ videos }: { videos: Video[] }) {
+  const { showFurigana, stealth, setShowFurigana, setStealth } = useScriptSettings()
   const [activeSectionId, setActiveSectionId] = useState<string>('all')
   const [activeIndex, setActiveIndex] = useState<number | null>(0)
 
@@ -56,21 +59,10 @@ function App() {
     [activeSectionId],
   )
 
+  // SSR と食い違わないよう、保存値はマウント後に読み込む
   useEffect(() => {
-    try {
-      localStorage.setItem(FURIGANA_KEY, String(showFurigana))
-    } catch {
-      // 保存できなくても動作には影響しない
-    }
-  }, [showFurigana])
-
-  useEffect(() => {
-    try {
-      localStorage.setItem(STEALTH_KEY, String(stealth))
-    } catch {
-      // 保存できなくても動作には影響しない
-    }
-  }, [stealth])
+    void useScriptSettings.persist.rehydrate()
+  }, [])
 
   // 表示中の行の範囲(全体での通し番号)
   const firstIndex = sectionOffsets.get(visibleSections[0].id) ?? 0
@@ -83,38 +75,25 @@ function App() {
   }
 
   // Space / ↓ で次の行へ、Shift+Space / ↑ で前の行へ
-  useEffect(() => {
-    const direction = (event: KeyboardEvent): 1 | -1 | null => {
-      if (event.ctrlKey || event.metaKey || event.altKey) return null
-      if (event.key === 'ArrowDown') return 1
-      if (event.key === 'ArrowUp') return -1
-      if (event.key === ' ') return event.shiftKey ? -1 : 1
-      return null
-    }
-    const isFormControl = (target: EventTarget | null) =>
-      target instanceof HTMLElement &&
-      (target.closest('input, select, textarea, [role="switch"], [role="tab"]') !== null)
+  const moveActive = (step: 1 | -1) => (event: KeyboardEvent) => {
+    if (isFormControl(event.target)) return
+    event.preventDefault()
+    setActiveIndex((current) => {
+      const base = current ?? firstIndex - (step === 1 ? 1 : -1)
+      return Math.min(lastIndex, Math.max(firstIndex, base + step))
+    })
+  }
+  useHotkey('ArrowDown', moveActive(1), HOTKEY_OPTIONS)
+  useHotkey('Space', moveActive(1), HOTKEY_OPTIONS)
+  useHotkey('ArrowUp', moveActive(-1), HOTKEY_OPTIONS)
+  useHotkey('Shift+Space', moveActive(-1), HOTKEY_OPTIONS)
 
-    const onKeyDown = (event: KeyboardEvent) => {
-      const step = direction(event)
-      if (step === null || isFormControl(event.target)) return
-      event.preventDefault()
-      setActiveIndex((current) => {
-        const base = current ?? firstIndex - (step === 1 ? 1 : -1)
-        return Math.min(lastIndex, Math.max(firstIndex, base + step))
-      })
-    }
-    // フォーカス中の行ボタンが Space で押された扱いにならないようにする
-    const onKeyUp = (event: KeyboardEvent) => {
-      if (event.key === ' ' && !isFormControl(event.target)) event.preventDefault()
-    }
-    window.addEventListener('keydown', onKeyDown)
-    window.addEventListener('keyup', onKeyUp)
-    return () => {
-      window.removeEventListener('keydown', onKeyDown)
-      window.removeEventListener('keyup', onKeyUp)
-    }
-  }, [firstIndex, lastIndex])
+  // フォーカス中の行ボタンが、Space を離したときにクリックされた扱いにならないようにする
+  const suppressSpaceClick = (event: KeyboardEvent) => {
+    if (!isFormControl(event.target)) event.preventDefault()
+  }
+  useHotkey('Space', suppressSpaceClick, { ...HOTKEY_OPTIONS, eventType: 'keyup' })
+  useHotkey('Shift+Space', suppressSpaceClick, { ...HOTKEY_OPTIONS, eventType: 'keyup' })
 
   // 選択中の行を画面の中央に寄せる
   useEffect(() => {
@@ -184,7 +163,11 @@ function App() {
                             type="button"
                             className={activeIndex === index ? 'phrase is-active' : 'phrase'}
                             data-phrase-index={index}
-                            onClick={() => setActiveIndex(index)}
+                            onClick={() => {
+                              setActiveIndex(index)
+                              // プレビュー中の動画があれば、その行の時刻から再生する(一時停止中なら再開)
+                              previewPlayer.seekToLine(index)
+                            }}
                           >
                             <span className="index">{index + 1}</span>
                             <span className={stealth ? 'text is-stealth' : 'text'}>
@@ -200,9 +183,10 @@ function App() {
             </div>
           </div>
         </SidebarInset>
+
+        <VideoSidebar videos={videos} selectedLine={activeIndex} />
       </SidebarProvider>
     </TooltipProvider>
   )
 }
 
-export default App

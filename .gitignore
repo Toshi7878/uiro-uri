@@ -27,3 +27,8 @@ dist-ssr
 models
 .vercel
 .env*
+!.env.example
+
+# TanStack Start / Nitro
+.output
+.tanstack

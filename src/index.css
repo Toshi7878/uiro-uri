@@ -85,25 +85,6 @@ body {
   padding: 12px 16px 32px;
 }
 
-/*
- * サイドバーを開いているとき、文章の位置を調整する。
- * --content-shift が 1 ならブラウザ全体の中央、0 なら右側の領域(サイドバーを除いた部分)の中央。
- * 1 より大きいと、全体の中央より左に寄る(2 でサイドバー幅の半分だけ左)。
- * 右側の領域の右に、サイドバー幅 × --content-shift の余白を足して寄せ方を決める。
- * 画面が狭くて文章が入りきらないときは、その分だけ余白を減らす。
- */
-@media (min-width: 768px) {
-  [data-slot='sidebar-wrapper']:has(.peer[data-state='expanded']) [data-slot='sidebar-inset'] {
-    --content-shift: 1.8;
-    padding-right: calc(
-      min(
-        calc(var(--sidebar-width) * var(--content-shift)),
-        max(0px, calc(100vw - var(--sidebar-width) - 792px))
-      ) + 14px
-    );
-  }
-}
-
 .header h1 {
   margin: 4px 0 12px;
   font-size: clamp(32px, 6vw, 48px);
