@@ -86,6 +86,13 @@ export const previewPlayer = {
     else void player.playVideo()
   },
 
+  /** 再生中なら一時停止し、止まっているなら index 行目の開始時刻から再生する。 */
+  togglePlayAtLine(index: number) {
+    const { player } = getState()
+    if (player?.getPlayerState() === 1) void player.pauseVideo()
+    else previewPlayer.seekToLine(index)
+  },
+
   /** プレビュー中の動画を、index 行目(全体での通し番号)の開始時刻から再生する(一時停止中なら再開)。収録されていない行なら何もしない。 */
   seekToLine(index: number) {
     const { player, times } = getState()

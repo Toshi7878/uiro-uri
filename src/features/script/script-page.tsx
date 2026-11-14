@@ -31,7 +31,7 @@ const isFormControl = (target: EventTarget | null) =>
   target.closest('input, select, textarea, [role="switch"], [role="tab"]') !== null
 
 /**
- * 行ボタンにフォーカスがあっても Space で次の行へ進めたいので、ボタンでの Space を除外する既定の動きはやめ、
+ * 行ボタンにフォーカスがあっても Space で再生・一時停止したいので、ボタンでの Space を除外する既定の動きはやめ、
  * 除外の判断と preventDefault は `isFormControl` を使ってコールバック側で行う。
  */
 const HOTKEY_OPTIONS = { ignoreInputs: false, preventDefault: false, stopPropagation: false } as const
@@ -70,26 +70,43 @@ export function ScriptPage({ videos, settings }: { videos: Video[]; settings: Sc
     setActiveIndex(id === 'all' ? 0 : (sectionOffsets.get(id) ?? 0))
   }
 
-  // Space / ↓ で次の行へ、Shift+Space / ↑ で前の行へ
-  const moveActive = (step: 1 | -1) => (event: KeyboardEvent) => {
+  // 行の移動。`play` なら、動き先の行をプレビュー動画で再生する
+  const moveActive = (step: 1 | -1, play = false) => (event: KeyboardEvent) => {
     if (isFormControl(event.target)) return
     event.preventDefault()
-    setActiveIndex((current) => {
-      const base = current ?? firstIndex - (step === 1 ? 1 : -1)
-      return Math.min(lastIndex, Math.max(firstIndex, base + step))
-    })
+    const base = activeIndex ?? firstIndex - (step === 1 ? 1 : -1)
+    const next = Math.min(lastIndex, Math.max(firstIndex, base + step))
+    setActiveIndex(next)
+    if (play) previewPlayer.seekToLine(next)
   }
+  // 選択中の行に対する動作
+  const actOnActive = (act: (index: number) => void) => (event: KeyboardEvent) => {
+    if (isFormControl(event.target)) return
+    event.preventDefault()
+    if (activeIndex !== null) act(activeIndex)
+  }
+  // ↓ / ↑: 行を選ぶだけ。→ / ←: 次・前の行へ移って再生
   useHotkey('ArrowDown', moveActive(1), HOTKEY_OPTIONS)
-  useHotkey('Space', moveActive(1), HOTKEY_OPTIONS)
   useHotkey('ArrowUp', moveActive(-1), HOTKEY_OPTIONS)
-  useHotkey('Shift+Space', moveActive(-1), HOTKEY_OPTIONS)
+  useHotkey('ArrowRight', moveActive(1, true), HOTKEY_OPTIONS)
+  useHotkey('ArrowLeft', moveActive(-1, true), HOTKEY_OPTIONS)
+  // Space: 再生中なら一時停止、止まっていれば選択行の頭から再生。Enter: 選択行の頭から再生し直す
+  useHotkey('Space', actOnActive(previewPlayer.togglePlayAtLine), HOTKEY_OPTIONS)
+  useHotkey(
+    'Enter',
+    (event) => {
+      // ボタンやリンクにフォーカスがあるときは、本来のクリック操作(動画の選択など)を妨げない
+      if (event.target instanceof HTMLElement && event.target.closest('button, a')) return
+      actOnActive(previewPlayer.seekToLine)(event)
+    },
+    HOTKEY_OPTIONS,
+  )
 
   // フォーカス中の行ボタンが、Space を離したときにクリックされた扱いにならないようにする
   const suppressSpaceClick = (event: KeyboardEvent) => {
     if (!isFormControl(event.target)) event.preventDefault()
   }
   useHotkey('Space', suppressSpaceClick, { ...HOTKEY_OPTIONS, eventType: 'keyup' })
-  useHotkey('Shift+Space', suppressSpaceClick, { ...HOTKEY_OPTIONS, eventType: 'keyup' })
 
   // 選択中の行を画面の中央に寄せる
   useEffect(() => {
